@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}RFID Mappings - RFID Music System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h3">
+                <i class="bi bi-collection me-2"></i>
+                RFID Mappings
+            </h1>
+            <div>
+                <a href="{{ url_for('assign') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Assign New RFID
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if mappings %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>{{ mappings|length }}</strong> RFID card{{ 's' if mappings|length != 1 else '' }} configured
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for mapping in mappings %}
+        <div class="col-xl-6 col-lg-6 col-md-12 mb-4">
+            <div class="card card-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                            <span class="status-indicator status-mapped me-2" title="Mapped"></span>
+                            <h5 class="card-title mb-0">
+                                {% if mapping.album_title %}
+                                    {{ mapping.album_title }}
+                                {% else %}
+                                    {{ mapping.music_dir.split('/')[-1] }}
+                                {% endif %}
+                            </h5>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('edit', rfid=mapping.rfid) }}">
+                                        <i class="bi bi-pencil me-2"></i>Edit
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ url_for('unassign', rfid=mapping.rfid) }}" 
+                                          onsubmit="return confirm('Are you sure you want to remove this mapping?')">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="bi bi-trash me-2"></i>Remove
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {% if mapping.artist %}
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-person me-1"></i>{{ mapping.artist }}
+                    </p>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <small class="text-muted">RFID:</small>
+                        <span class="rfid-card">{{ mapping.rfid }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Directory:</small>
+                        <code class="text-primary">{{ mapping.music_dir }}</code>
+                    </div>
+
+                    <div class="row text-muted small">
+                        <div class="col-6">
+                            <i class="bi bi-calendar-plus me-1"></i>
+                            <span title="Created">{{ mapping.created_at[:16] if mapping.created_at else 'Unknown' }}</span>
+                        </div>
+                        <div class="col-6 text-end">
+                            {% if mapping.last_played %}
+                                <i class="bi bi-play-circle me-1"></i>
+                                <span title="Last Played">{{ mapping.last_played[:16] }}</span>
+                            {% else %}
+                                <span class="text-muted">Never played</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if mapping.cover_path %}
+                <div class="card-footer bg-transparent">
+                    <img src="{{ mapping.cover_path }}" alt="Album Cover" class="album-cover">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-music-note-list display-1 text-muted"></i>
+                </div>
+                <h3 class="text-muted">No RFID Cards Configured</h3>
+                <p class="text-muted mb-4">
+                    Get started by scanning an RFID card or manually assigning one to a music directory.
+                </p>
+                <a href="{{ url_for('assign') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Assign First RFID
+                </a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-refresh page every 30 seconds to show updates from RFID scans
+setTimeout(function() {
+    location.reload();
+}, 30000);
+
+// Show toast notification for new scans (if needed)
+function showScanNotification(rfid, mapped) {
+    // This could be enhanced to show real-time notifications via WebSocket
+}
+</script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Edit RFID Mapping - RFID Music System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="bi bi-pencil me-2"></i>
+                    Edit RFID Mapping
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>RFID:</strong> 
+                            <span class="rfid-card">{{ mapping.rfid }}</span>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <strong>Directory:</strong> 
+                            <code>{{ mapping.music_dir }}</code>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('edit', rfid=mapping.rfid) }}">
+                    <div class="mb-3">
+                        <label for="album_title" class="form-label">Album Title</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="album_title" 
+                               name="album_title" 
+                               value="{{ mapping.album_title or '' }}"
+                               placeholder="Enter album title">
+                        <div class="form-text">
+                            This will be displayed instead of the directory name.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="artist" class="form-label">Artist</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="artist" 
+                               name="artist" 
+                               value="{{ mapping.artist or '' }}"
+                               placeholder="Enter artist name">
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Cancel
+                        </a>
+                        <div>
+                            <form method="POST" action="{{ url_for('unassign', rfid=mapping.rfid) }}" 
+                                  style="display: inline;"
+                                  onsubmit="return confirm('Are you sure you want to remove this mapping?')">
+                                <button type="submit" class="btn btn-outline-danger me-2">
+                                    <i class="bi bi-trash me-1"></i>
+                                    Remove
+                                </button>
+                            </form>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Mapping Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">RFID ID:</dt>
+                    <dd class="col-sm-8"><span class="rfid-card">{{ mapping.rfid }}</span></dd>
+                    
+                    <dt class="col-sm-4">Music Directory:</dt>
+                    <dd class="col-sm-8"><code>{{ mapping.music_dir }}</code></dd>
+                    
+                    <dt class="col-sm-4">Directory Name:</dt>
+                    <dd class="col-sm-8">{{ mapping.music_dir.split('/')[-1] }}</dd>
+                    
+                    <dt class="col-sm-4">Created:</dt>
+                    <dd class="col-sm-8">{{ mapping.created_at or 'Unknown' }}</dd>
+                    
+                    <dt class="col-sm-4">Last Played:</dt>
+                    <dd class="col-sm-8">
+                        {% if mapping.last_played %}
+                            {{ mapping.last_played }}
+                        {% else %}
+                            <span class="text-muted">Never played</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        {% if mapping.cover_path %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-image me-2"></i>
+                    Album Cover
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ mapping.cover_path }}" alt="Album Cover" class="img-fluid rounded" style="max-width: 200px;">
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-focus first input field
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('album_title').focus();
+});
+</script>
+{% endblock %}
