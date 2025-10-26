@@ -2,9 +2,18 @@
 
 # Start RFID Listener Service
 
-# Activate virtual environment
-if [ -d "venv" ]; then
+# Check if uv is available and use it, otherwise fall back to traditional venv
+if command -v uv &> /dev/null && [ -d ".venv" ]; then
+    echo "Using uv virtual environment..."
+    UV_RUN="uv run"
+elif [ -d ".venv" ]; then
+    echo "Activating .venv virtual environment..."
+    source .venv/bin/activate
+    UV_RUN=""
+elif [ -d "venv" ]; then
+    echo "Activating venv virtual environment..."
     source venv/bin/activate
+    UV_RUN=""
 else
     echo "Virtual environment not found. Run setup.sh first."
     exit 1
@@ -21,4 +30,4 @@ echo "Press Ctrl+C to stop"
 echo ""
 
 # Start the listener
-python rfid_listener.py
+${UV_RUN} python rfid_listener.py

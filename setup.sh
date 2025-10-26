@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # RFID Music System - Linux Host Setup Script
-# This script sets up the Linux RFID + Web Host environment
+# This script sets up the Linux RFID + Web Host environment using uv
 
 echo "Setting up RFID Music System - Linux Host"
 echo "=========================================="
@@ -9,28 +9,47 @@ echo "=========================================="
 # Check if Python 3 is installed
 if ! command -v python3 &> /dev/null; then
     echo "Error: Python 3 is not installed"
+    echo "Install with: sudo apt install python3"
     exit 1
 fi
 
-# Check if pip is installed
-if ! command -v pip3 &> /dev/null; then
-    echo "Error: pip3 is not installed"
-    exit 1
+# Check if uv is installed, if not, install it
+if ! command -v uv &> /dev/null; then
+    echo "uv not found. Installing uv (fast Python package manager)..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    
+    # Add uv to PATH for current session
+    export PATH="$HOME/.cargo/bin:$PATH"
+    
+    # Check if installation succeeded
+    if ! command -v uv &> /dev/null; then
+        echo "Error: Failed to install uv"
+        echo "Please install uv manually: https://docs.astral.sh/uv/getting-started/installation/"
+        exit 1
+    fi
+    
+    echo "✓ uv installed successfully"
+else
+    echo "✓ uv is already installed"
 fi
 
 # Create virtual environment if it doesn't exist
-if [ ! -d "venv" ]; then
-    echo "Creating virtual environment..."
-    python3 -m venv venv
+if [ ! -d ".venv" ]; then
+    echo "Creating virtual environment with uv..."
+    uv venv
+else
+    echo "✓ Virtual environment already exists"
 fi
 
-# Activate virtual environment
-echo "Activating virtual environment..."
-source venv/bin/activate
-
-# Install requirements
-echo "Installing Python packages..."
-pip install -r requirements.txt
+# Install dependencies using uv
+echo "Installing Python packages with uv..."
+if [ -f "pyproject.toml" ]; then
+    echo "Using pyproject.toml for dependency management..."
+    uv pip install -e .
+else
+    echo "Falling back to requirements.txt..."
+    uv pip install -r requirements.txt
+fi
 
 # Create directories
 echo "Creating directories..."
